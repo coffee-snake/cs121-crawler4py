@@ -37,7 +37,7 @@ def extract_next_links(url, resp):
         if(resp.status == 200):
 
             # Beautiful Soup
-            currURLSoup = BeautifulSoup(resp.raw_response.content, 'lxml') 
+            currURLSoup = BeautifulSoup(resp.raw_response.content.decode('utf-8','ignore'), 'lxml')
             
             # Tokenize the website currURLSoup.get_text 
             # (which returns a non html text)
@@ -167,12 +167,21 @@ def is_valid(url):
             if invalidQuery in parsed.query:
                 return False
         for validDomain in acceptedDomains:
-            if '.'+validDomain in parsed.hostname or '/'+validDomain in parsed.hostname:
+            if ('.'+validDomain in parsed.hostname or '/'+validDomain in parsed.hostname) and parsed.hostname.endswith(validDomain):
                 break
         else:
             return False
 
         if parsed.scheme not in set(["http", "https"]):
+            return False
+        if re.match(r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx"
+            + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
+            + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
+            + r"|epub|dll|cnf|tgz|sha1|bam|mat"
+            + r"|thmx|mso|arff|rtf|jar|csv"
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.query.lower()):
             return False
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx"
