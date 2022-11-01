@@ -197,7 +197,7 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.query.lower()):
             return False
         return not re.match(
-            r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx"
+            r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx|war"
             + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
