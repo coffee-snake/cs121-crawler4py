@@ -35,10 +35,15 @@ def extract_next_links(url, resp):
         validURLs = [] 
         # if repsonse is 200, we crawl the website
         if(resp.status == 200):
-
+            
+            # Access unique_pages & update it
+            global unique_pages
+            unique_pages += 1
+            
             # Beautiful Soup
             currURLSoup = BeautifulSoup(resp.raw_response.content.decode('utf-8','ignore'), 'lxml')
-            
+            if currURLSoup is None:
+                return []
             # Tokenize the website currURLSoup.get_text 
             # (which returns a non html text)
             text = currURLSoup.get_text()
@@ -52,6 +57,7 @@ def extract_next_links(url, resp):
             hash = getSimHash(tokenize_feature(text))
             # 2. Extract the domain of the current URL
             domain = extract_domain(url)
+            domain = reduceDomain(domain)
             # 3. Check if there is similarity between the hashed 
             #    text of the current webpage and any other URLs
             #    of the same "domain family"
@@ -66,10 +72,7 @@ def extract_next_links(url, resp):
             #    since it is low info / too similar to one of the subdomains
             elif similar:
                 return []
-            
-            # Access unique_pages & update it
-            global unique_pages
-            unique_pages += 1
+
             # [ADDING VALID URLS TO LIST]
             # For every link within <a></a>
             for scrapedURL in currURLSoup.find_all('a'):
@@ -150,7 +153,9 @@ def tokenize(soupText, url):
 def is_valid(url): 
     # Pre initialized variables
     acceptedDomains = ['ics.uci.edu','cs.uci.edu','informatics.uci.edu','stat.uci.edu']
-    invalidFiles = ['.tex','.zip','.pdf','.csv','.ps','.gz','.ppt','.m','mat']
+    invalidFiles = ['.tex','.zip','.pdf','.csv','.ps','.gz','.ppt','.m','.mat']
+    invalidPaths = ['zip']
+    blacklistedURLs = ['https://grape.ics.uci.edu/wiki/public/raw-attachment/wiki/cs221-2019-spring-project3/Team10PositionalStressTest.txt']
     parsed = urlparse(url)
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
@@ -162,6 +167,14 @@ def is_valid(url):
         # Check if url is PDF
         if 'pdf' in parsed.path or '/wp-content/' in parsed.path or "~cs224" in parsed.path:
             return False
+        # Check if url is blacklisted
+        for blacklistedURL in blacklistedURLs:
+            if blacklistedURL in url:
+                return False
+        # Check if url contains zip
+        for invalidPath in invalidPaths:
+            if invalidPath in parsed.path:
+                return False
         # check if hostname is in allowed domains
         for invalidQuery in invalidFiles:
             if invalidQuery in parsed.query:
@@ -336,7 +349,15 @@ def similar(arr1,arr2) -> bool:
 
 # Traverses subdomain set to determine if a duplicate exists
 def find_similar(myHash,mySet):
+    if myHash in mySet:
+        return True
     for aHash in mySet:
         if similar(aHash,myHash):
             return True
     return False
+
+def reduceDomain(domain):
+    reduced = ['ics.uci.edu','cs.uci.edu','informatics.uci.edu','stat.uci.edu']
+    for link in reduced:
+        if link in domain:
+            return link
