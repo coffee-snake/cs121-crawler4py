@@ -32,13 +32,14 @@ class Worker(Thread):
                 scraper.generate_report()
                 break
             
-            urlDomain = scraper.extract_domain(tbd_url)
+            urlDomain = scraper.reduceDomain(scraper.extract_domain(tbd_url))
             # print(Worker.domainCrawlTimer)
             while True:
                 Worker.workerLock.acquire()
                 if (urlDomain not in Worker.domainCrawlTimer):
                     Worker.domainCrawlTimer[urlDomain] = time.time()
                     Worker.workerLock.release()
+                    break
                 else:
                     timeDelta = time.time()-Worker.domainCrawlTimer[urlDomain]
                     
