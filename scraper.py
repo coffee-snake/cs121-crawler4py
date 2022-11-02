@@ -1,8 +1,8 @@
 import re
 from urllib.parse import urlparse
 from urllib.parse import urldefrag
+from urllib.parse import urljoin
 from bs4 import BeautifulSoup
-import sys
 from collections import defaultdict
 from hashlib import blake2b
 from threading import Lock
@@ -80,12 +80,14 @@ def extract_next_links(url, resp):
                 if scrapedURL.get('href') is None:
                     continue
                 # Check if scrapedURL is relative path
-                if not ('://' in defragmented or '//' in defragmented):
+                if not ("://" in defragmented or "//" in defragmented):
                     parsed = urlparse(url)
                     if parsed.hostname != None:
-                        defragmented = parsed.scheme + "://" + parsed.hostname + defragmented
+                        #defragmented = parsed.scheme + "://" + parsed.hostname + defragmented
+                        defragmented = urljoin(url,defragmented)
                     else:
                         defragmented = ""
+                    
                 
                 validURLs.append(defragmented)
                 # todo: delete once finish finish testing
