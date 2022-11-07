@@ -35,6 +35,7 @@ def scraper(url, resp):
         return []
 
 def extract_next_links(url, resp):
+    # Multithreading : Makes sure only a single crawler is running this function at a time
     with myLock:
         validURLs = [] 
         # if repsonse is 200, we crawl the website
@@ -44,7 +45,7 @@ def extract_next_links(url, resp):
             global unique_pages
             unique_pages += 1
             
-            # Beautiful Soup
+            # Beautiful Soup : Ignore non utf-8 characters
             currURLSoup = BeautifulSoup(resp.raw_response.content.decode('utf-8','ignore'), 'lxml')
             if currURLSoup is None:
                 return []
@@ -54,6 +55,7 @@ def extract_next_links(url, resp):
             # If textual information on website is below 500 words, avoid and do not crawl
             if len(text) <= 500: return []
             
+            # Tokenize the URL
             tokenize(text, url)
 
             # [SIM HASH]
@@ -81,6 +83,7 @@ def extract_next_links(url, resp):
             # For every link within <a></a>
             for scrapedURL in currURLSoup.find_all('a'):
                 defragmented = urldefrag(scrapedURL.get('href'))[0]
+                # If there is no URL, then skip to next for loop iteration
                 if scrapedURL.get('href') is None:
                     continue
                 # Check if scrapedURL is relative path
@@ -254,7 +257,8 @@ def record_ics_domains(url: str) -> None:
 #       1. Unique Pages Found
 #       2. URL with the most amount of words
 #       3. Subdomains found under ICS domain
-#       4. Other statistics
+#       4. Common Words found
+#       5. ICS Domains found
 def generate_report() -> None:
     """Generate the Final Report"""
     global ics_domains_info
@@ -313,9 +317,8 @@ def tokenize_feature(soupText: str) -> defaultdict(int):
     return token_list
 
 # Function : Extract Domain
-# Use : Given a url, extracts its domain
+# Use : Given a url, extracts its domain / hostname
 def extract_domain(url: str) -> str:
-    """return the subdomain of the url"""
     parsed = urlparse(url)
     hostname = parsed.hostname 
     
@@ -337,9 +340,11 @@ def getSimHash(myCounter):
     for mystr, freq in myCounter.items():
         # Get the hexvalue of the string using the hash function
         hexValue = hashFunction(mystr.encode('utf-8')).hexdigest()
-        # Conver the hex value into binary
+        # Conver the hex value into binary by first converting hex to int, then into binary, also remove first two chars since they aren't part of the binary val
         binValue = bin(int(hexValue,16))[2::]
+        # Pad the binary val with 0s in case its not 512 len
         binValue = "0"*(512-len(binValue))+binValue
+        # For each index of the binValue, add it to the vector
         for index, let in enumerate(binValue):
             mult = 1 if int(let) == 1 else -1 
             myVector[index] += mult*freq
@@ -362,6 +367,7 @@ def find_similar(myHash,mySet):
             return True
     return False
 
+# Prevents similar domains like swiki and wiki
 def reduceDomain(domain):
     reduced = ['ics.uci.edu','cs.uci.edu','informatics.uci.edu','stat.uci.edu']
     for link in reduced:

@@ -35,17 +35,24 @@ class Worker(Thread):
             urlDomain = scraper.reduceDomain(scraper.extract_domain(tbd_url))
             # print(Worker.domainCrawlTimer)
             while True:
+                # Get the lock
                 Worker.workerLock.acquire()
+                # If the URL is not in the dictionary that holds the last visited time of the url
                 if (urlDomain not in Worker.domainCrawlTimer):
+                    # Add the URL to the dict, and add the time we accessed it
                     Worker.domainCrawlTimer[urlDomain] = time.time()
+                    # Rekease the lock & break out of while loop & download URL
                     Worker.workerLock.release()
                     break
                 else:
+                    # TimeDelta is the time that has passed since we last crawled the domain
                     timeDelta = time.time()-Worker.domainCrawlTimer[urlDomain]
                     
+                    # If we have not exceeded the time delay, release lock & sleep worker until we hit delay
                     if  timeDelta < self.config.time_delay:
                         Worker.workerLock.release()
                         time.sleep(self.config.time_delay-timeDelta+.1)
+                    # If we HAVE hit the threshold, break out of while and download URL
                     else:
                         Worker.domainCrawlTimer[urlDomain] = time.time()
                         Worker.workerLock.release()
