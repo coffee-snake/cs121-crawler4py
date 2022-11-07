@@ -13,7 +13,7 @@ unique_pages = 0
 # Example : "it" : 5 -> means "it" has occured 5 times so far out of all pages scraped
 token_dictionary = {}
 # Set of Stop Words
-stop_words_set = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',"ourselves", "hers", "between", "yourself", "but", "again", "there", "about", "once", "during", "out", "very", "having", "with", "they", "own", "an", "be", "some", "for", "do", "its", "yours", "such", "into", "of", "most", "itself", "other", "off", "is", "s", "am", "or", "who", "as", "from", "him", "each", "the", "themselves", "until", "below", "are", "we", "these", "your", "his", "through", "don", "nor", "me", "were", "her", "more", "himself", "this", "down", "should", "our", "their", "while", "above", "both", "up", "to", "ours", "had", "she", "all", "no", "when", "at", "any", "before", "them", "same", "and", "been", "have", "in", "will", "on", "does", "yourselves", "then", "that", "because", "what", "over", "why", "so", "can", "did", "not", "now", "under", "he", "you", "herself", "has", "just", "where", "too", "only", "myself", "which", "those", "i", "after", "few", "whom", "t", "being", "if", "theirs", "my", "against", "a", "by", "doing", "it", "how", "further", "was", "here", "than"}
+stop_words_set = {'0','1','2','3','4','5','6','7','8','9',"10",'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',"ourselves", "hers", "between", "yourself", "but", "again", "there", "about", "once", "during", "out", "very", "having", "with", "they", "own", "an", "be", "some", "for", "do", "its", "yours", "such", "into", "of", "most", "itself", "other", "off", "is", "s", "am", "or", "who", "as", "from", "him", "each", "the", "themselves", "until", "below", "are", "we", "these", "your", "his", "through", "don", "nor", "me", "were", "her", "more", "himself", "this", "down", "should", "our", "their", "while", "above", "both", "up", "to", "ours", "had", "she", "all", "no", "when", "at", "any", "before", "them", "same", "and", "been", "have", "in", "will", "on", "does", "yourselves", "then", "that", "because", "what", "over", "why", "so", "can", "did", "not", "now", "under", "he", "you", "herself", "has", "just", "where", "too", "only", "myself", "which", "those", "i", "after", "few", "whom", "t", "being", "if", "theirs", "my", "against", "a", "by", "doing", "it", "how", "further", "was", "here", "than"}
 # URL of the page that contains the most amount of tokens
 maxWordsURL = ''
 # Num of words in maxWordsUrl
@@ -26,9 +26,13 @@ myLock = Lock()
 
 
 # [MAIN FUNCTIONS]
+
 def scraper(url, resp):
-    links = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)]
+    try: 
+        links = extract_next_links(url, resp)
+        return [link for link in links if is_valid(link)]
+    except:
+        return []
 
 def extract_next_links(url, resp):
     with myLock:
@@ -157,7 +161,7 @@ def is_valid(url):
     acceptedDomains = ['ics.uci.edu','cs.uci.edu','informatics.uci.edu','stat.uci.edu']
     invalidFiles = ['.tex','.zip','.pdf','.csv','.ps','.gz','.ppt','.m','.mat']
     invalidPaths = ['zip']
-    blacklistedURLs = ['https://grape.ics.uci.edu/wiki/public/raw-attachment/wiki/cs221-2019-spring-project3/Team10PositionalStressTest.txt']
+    blacklistedURLs = ['https://grape.ics.uci.edu/wiki/public/raw-attachment/wiki/cs221-2019-spring-project3/Team10PositionalStressTest.txt', 'http://cdb.ics.uci.edu/supplement/randomSmiles100K', 'http://archive.ics.uci.edu/ml/datasets.php?format=&task=cla&att=mix&area=&numAtt=&numIns=greater1000&type=mvar&sort=nameUp&view=list', 'http://archive.ics.uci.edu/ml/datasets.php?format=nonmat&task=cla&att=&area=&numAtt=10to100&numIns=less100&type=ts&sort=nameUp&view=list']
     parsed = urlparse(url)
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
@@ -190,7 +194,7 @@ def is_valid(url):
         if parsed.scheme not in set(["http", "https"]):
             return False
         if re.match(r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx"
-            + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c"
+            + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c|tsv|mpg"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
@@ -200,7 +204,7 @@ def is_valid(url):
             return False
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico|html|sql|ppsx|war"
-            + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c"
+            + r"|png|tiff?|mid|mp2|mp3|mp4|bib|nb|r|m|c|tsv|mpg"
             + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
